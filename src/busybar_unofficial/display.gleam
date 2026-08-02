@@ -324,7 +324,7 @@ pub fn clear_request(
 ) -> Result(Request(String), Error) {
   use req <- result.try(api.request_for(client, http.Delete, "/display/draw"))
   case application_name {
-    Some(name) -> Ok(request.set_query(req, [#("application_name", name)]))
+    Some(name) -> Ok(api.set_query(req, [#("application_name", name)]))
     None -> Ok(req)
   }
 }
@@ -383,7 +383,7 @@ pub fn set_brightness_request(
     http.Post,
     "/display/brightness",
   ))
-  Ok(request.set_query(req, [#("value", brightness_to_string(brightness))]))
+  Ok(api.set_query(req, [#("value", brightness_to_string(brightness))]))
 }
 
 pub fn set_brightness(

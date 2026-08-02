@@ -79,7 +79,7 @@ pub fn set_volume_request(
     True -> [#("volume", int.to_string(volume)), #("silent", "1")]
     False -> [#("volume", int.to_string(volume))]
   }
-  Ok(request.set_query(req, params))
+  Ok(api.set_query(req, params))
 }
 
 /// Set volume (0-100). When `silent` is True the change chime is suppressed.

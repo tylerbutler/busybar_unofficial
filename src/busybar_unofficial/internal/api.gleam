@@ -14,6 +14,7 @@ import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
 import gleam/string
+import gleam/uri
 
 /// Build a request for an API path (e.g. "/status"). Prepends "/busybar".
 pub fn request_for(
@@ -155,6 +156,15 @@ pub fn send_bits_raw(req: Request(BitArray)) -> Result(BitArray, Error) {
   httpc.send_bits(req)
   |> result.map_error(network_error)
   |> result.try(handle_bits)
+}
+
+/// Set query params with full percent-encoding (including "+", which
+/// request.set_query leaves literal and many servers decode as a space).
+pub fn set_query(
+  req: Request(body),
+  params: List(#(String, String)),
+) -> Request(body) {
+  request.Request(..req, query: option.Some(uri.query_to_string(params)))
 }
 
 /// Attach a JSON body and content-type header to a request.

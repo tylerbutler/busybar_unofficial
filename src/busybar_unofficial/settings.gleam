@@ -101,7 +101,7 @@ pub fn press_key_request(
   key: InputKey,
 ) -> Result(Request(String), Error) {
   use req <- result.try(api.request_for(client, http.Post, "/input"))
-  Ok(request.set_query(req, [#("key", key_to_string(key))]))
+  Ok(api.set_query(req, [#("key", key_to_string(key))]))
 }
 
 /// Simulate pressing a device key.
@@ -129,7 +129,7 @@ pub fn set_access_request(
     Some(key) -> [#("mode", mode_to_string(mode)), #("key", key)]
     None -> [#("mode", mode_to_string(mode))]
   }
-  Ok(request.set_query(req, params))
+  Ok(api.set_query(req, params))
 }
 
 /// Set the HTTP access mode. `key` (4-10 digits) is required for AccessKey.

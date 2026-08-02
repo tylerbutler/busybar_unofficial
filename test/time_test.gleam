@@ -22,7 +22,7 @@ pub fn set_timestamp_request_test() {
     time.set_timestamp_request(client(), "2025-10-02T14:30:45+02:00")
   req.method |> should.equal(http.Post)
   req.path |> should.equal("/busybar/time/timestamp")
-  req.query |> should.equal(Some("timestamp=2025-10-02T14%3A30%3A45+02%3A00"))
+  req.query |> should.equal(Some("timestamp=2025-10-02T14%3A30%3A45%2B02%3A00"))
 }
 
 pub fn timezone_decoder_test() {

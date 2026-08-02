@@ -292,7 +292,7 @@ pub fn get_screen_request(
     BackScreen -> "1"
   }
   use req <- result.try(api.request_for(client, http.Get, "/screen"))
-  Ok(request.set_query(req, [#("display", display)]))
+  Ok(api.set_query(req, [#("display", display)]))
 }
 
 /// Capture a display frame. The device sends base64; this returns raw BMP bytes.
@@ -309,7 +309,7 @@ pub fn dump_log_request(
 ) -> Result(Request(String), Error) {
   use req <- result.try(api.request_for(client, http.Post, "/log_dump"))
   case filename {
-    Some(name) -> Ok(request.set_query(req, [#("filename", name)]))
+    Some(name) -> Ok(api.set_query(req, [#("filename", name)]))
     None -> Ok(req)
   }
 }

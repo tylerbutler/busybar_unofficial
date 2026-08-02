@@ -46,7 +46,7 @@ pub fn write_request(
   use req <- result.try(api.request_for(client, http.Post, "/storage/write"))
   Ok(
     req
-    |> request.set_query([#("path", path)])
+    |> api.set_query([#("path", path)])
     |> request.set_header("content-type", "application/octet-stream")
     |> request.set_body(data),
   )
@@ -67,7 +67,7 @@ pub fn read_request(
   path: String,
 ) -> Result(Request(BitArray), Error) {
   use req <- result.try(api.request_for(client, http.Get, "/storage/read"))
-  Ok(req |> request.set_query([#("path", path)]) |> request.set_body(<<>>))
+  Ok(req |> api.set_query([#("path", path)]) |> request.set_body(<<>>))
 }
 
 /// Read a file from device storage.
@@ -81,7 +81,7 @@ pub fn list_request(
   path: String,
 ) -> Result(Request(String), Error) {
   use req <- result.try(api.request_for(client, http.Get, "/storage/list"))
-  Ok(request.set_query(req, [#("path", path)]))
+  Ok(api.set_query(req, [#("path", path)]))
 }
 
 pub fn list(client: Client, path: String) -> Result(List(StorageEntry), Error) {
@@ -94,7 +94,7 @@ pub fn remove_request(
   path: String,
 ) -> Result(Request(String), Error) {
   use req <- result.try(api.request_for(client, http.Delete, "/storage/remove"))
-  Ok(request.set_query(req, [#("path", path)]))
+  Ok(api.set_query(req, [#("path", path)]))
 }
 
 pub fn remove(client: Client, path: String) -> Result(Nil, Error) {
@@ -107,7 +107,7 @@ pub fn mkdir_request(
   path: String,
 ) -> Result(Request(String), Error) {
   use req <- result.try(api.request_for(client, http.Post, "/storage/mkdir"))
-  Ok(request.set_query(req, [#("path", path)]))
+  Ok(api.set_query(req, [#("path", path)]))
 }
 
 pub fn mkdir(client: Client, path: String) -> Result(Nil, Error) {
@@ -121,7 +121,7 @@ pub fn rename_request(
   new_path: String,
 ) -> Result(Request(String), Error) {
   use req <- result.try(api.request_for(client, http.Post, "/storage/rename"))
-  Ok(request.set_query(req, [#("path", path), #("new_path", new_path)]))
+  Ok(api.set_query(req, [#("path", path), #("new_path", new_path)]))
 }
 
 pub fn rename(

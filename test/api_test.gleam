@@ -143,3 +143,11 @@ pub fn with_json_body_sets_body_and_content_type_test() {
   request.get_header(req, "content-type")
   |> should.equal(Ok("application/json"))
 }
+
+pub fn set_query_percent_encodes_plus_test() {
+  let client3 = busybar_unofficial.new("http://192.168.4.1")
+  let assert Ok(req) = api.request_for(client3, http.Post, "/time/timestamp")
+  let req = api.set_query(req, [#("timestamp", "2025-10-02T14:30:45+02:00")])
+  req.query
+  |> should.equal(Some("timestamp=2025-10-02T14%3A30%3A45%2B02%3A00"))
+}

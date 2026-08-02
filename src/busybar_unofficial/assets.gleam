@@ -15,7 +15,7 @@ pub fn upload_request(
   use req <- result.try(api.request_for(client, http.Post, "/assets/upload"))
   Ok(
     req
-    |> request.set_query([
+    |> api.set_query([
       #("application_name", application_name),
       #("file", file_name),
     ])
@@ -45,7 +45,7 @@ pub fn delete_request(
   application_name: String,
 ) -> Result(Request(String), Error) {
   use req <- result.try(api.request_for(client, http.Delete, "/assets/upload"))
-  Ok(request.set_query(req, [#("application_name", application_name)]))
+  Ok(api.set_query(req, [#("application_name", application_name)]))
 }
 
 /// Delete ALL assets uploaded for an application.

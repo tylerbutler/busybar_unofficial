@@ -47,7 +47,7 @@ pub fn set_timestamp_request(
   timestamp: String,
 ) -> Result(Request(String), Error) {
   use req <- result.try(api.request_for(client, http.Post, "/time/timestamp"))
-  Ok(request.set_query(req, [#("timestamp", timestamp)]))
+  Ok(api.set_query(req, [#("timestamp", timestamp)]))
 }
 
 /// Set the device clock from an ISO 8601 timestamp.
@@ -70,7 +70,7 @@ pub fn set_timezone_request(
   name: String,
 ) -> Result(Request(String), Error) {
   use req <- result.try(api.request_for(client, http.Post, "/time/timezone"))
-  Ok(request.set_query(req, [#("timezone", name)]))
+  Ok(api.set_query(req, [#("timezone", name)]))
 }
 
 /// Set the timezone by name (see `list_timezones`).
