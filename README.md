@@ -20,6 +20,27 @@ pub fn main() {
 }
 ```
 
+## Modules
+
+| Module | Covers |
+|---|---|
+| `busybar_unofficial` | Client + Error types |
+| `busybar_unofficial/account` | Cloud account info, MQTT status, backend |
+| `busybar_unofficial/assets` | App asset upload/delete |
+| `busybar_unofficial/audio` | Playback and volume |
+| `busybar_unofficial/ble` | BLE enable/disable/pairing/status |
+| `busybar_unofficial/busy` | Busy timer snapshot and profiles |
+| `busybar_unofficial/display` | Draw elements, clear, brightness |
+| `busybar_unofficial/settings` | Input keys, HTTP access, name, transport |
+| `busybar_unofficial/smart_home` | Matter pairing and emulated switch |
+| `busybar_unofficial/storage` | Device file storage |
+| `busybar_unofficial/system` | Status, version, screen capture, log dump |
+| `busybar_unofficial/time` | Clock and timezone |
+| `busybar_unofficial/updater` | Firmware updates and autoupdate |
+| `busybar_unofficial/wifi` | Wi-Fi status |
+
+Not covered: the WebSocket streaming endpoint (`/busybar/status/ws`).
+
 ## Development
 
 ```sh
