@@ -51,3 +51,7 @@ pub fn set_timezone_request_test() {
   let assert Ok(req) = time.set_timezone_request(client(), "Bangalore")
   req.query |> should.equal(Some("timezone=Bangalore"))
 }
+
+pub fn tzlist_decoder_defaults_to_empty_test() {
+  json.parse("{}", time.tzlist_decoder()) |> should.equal(Ok([]))
+}

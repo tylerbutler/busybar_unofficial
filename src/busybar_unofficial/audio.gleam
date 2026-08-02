@@ -83,6 +83,10 @@ pub fn set_volume_request(
 }
 
 /// Set volume (0-100). When `silent` is True the change chime is suppressed.
+///
+/// The device reports its current volume as a number (see `get_volume`,
+/// which returns `Float`), but accepts volume changes as integer steps,
+/// so this setter takes `Int`.
 pub fn set_volume(
   client: Client,
   volume: Int,

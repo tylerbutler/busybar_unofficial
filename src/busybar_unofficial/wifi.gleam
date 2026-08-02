@@ -32,6 +32,9 @@ pub type WifiStatus {
     bssid: Option(String),
     channel: Option(Int),
     rssi: Option(Int),
+    /// Kept as String deliberately: the spec's WifiSecurityMethod enum
+    /// values (WPA3, WPA2/WPA3, ...) are informational and
+    /// firmware-dependent.
     security: Option(String),
     ip_config: Option(IpConfig),
   )

@@ -77,6 +77,51 @@ pub fn snapshot_round_trip_test() {
   json.parse(encoded, busy.snapshot_decoder()) |> should.equal(Ok(snapshot))
 }
 
+pub fn snapshot_round_trip_not_started_test() {
+  let snapshot =
+    BusySnapshot(
+      snapshot: NotStarted,
+      busy_bar_settings: settings(),
+      snapshot_timestamp_ms: 1,
+    )
+  let encoded = busy.snapshot_to_json(snapshot) |> json.to_string
+  json.parse(encoded, busy.snapshot_decoder()) |> should.equal(Ok(snapshot))
+}
+
+pub fn snapshot_round_trip_simple_test() {
+  let snapshot =
+    BusySnapshot(
+      snapshot: Simple(card_id: "c1", time_left_ms: 9000, is_paused: False),
+      busy_bar_settings: settings(),
+      snapshot_timestamp_ms: 1,
+    )
+  let encoded = busy.snapshot_to_json(snapshot) |> json.to_string
+  json.parse(encoded, busy.snapshot_decoder()) |> should.equal(Ok(snapshot))
+}
+
+pub fn snapshot_round_trip_interval_test() {
+  let snapshot =
+    BusySnapshot(
+      snapshot: busy.Interval(
+        card_id: "c2",
+        current_interval: 1,
+        current_interval_time_total_ms: 60_000,
+        current_interval_time_left_ms: 42_690,
+        is_paused: False,
+        interval_settings: IntervalSettings(
+          interval_work_ms: 120_000,
+          interval_rest_ms: 60_000,
+          interval_work_cycles_count: 3,
+          is_autostart_enabled: False,
+        ),
+      ),
+      busy_bar_settings: settings(),
+      snapshot_timestamp_ms: 1,
+    )
+  let encoded = busy.snapshot_to_json(snapshot) |> json.to_string
+  json.parse(encoded, busy.snapshot_decoder()) |> should.equal(Ok(snapshot))
+}
+
 pub fn profile_round_trip_test() {
   let profile =
     BusyProfile(
