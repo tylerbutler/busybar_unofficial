@@ -11,6 +11,7 @@ import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
 
+/// Text fonts available on the device. `Global` uses the device default.
 pub type Font {
   Tiny
   Small
@@ -35,6 +36,7 @@ fn font_to_string(font: Font) -> String {
   }
 }
 
+/// Which physical display an element is drawn on.
 pub type DisplayTarget {
   Front
   Back
@@ -47,6 +49,7 @@ fn target_to_string(target: DisplayTarget) -> String {
   }
 }
 
+/// Anchor position of an element on the display.
 pub type Align {
   TopLeft
   TopMid
@@ -73,6 +76,7 @@ fn align_to_string(align: Align) -> String {
   }
 }
 
+/// Fill style for a `Rectangle` element.
 pub type Fill {
   NoFill
   Solid
@@ -89,11 +93,13 @@ fn fill_to_string(fill: Fill) -> String {
   }
 }
 
+/// Whether a `Countdown` element counts down to, or up from, its timestamp.
 pub type CountdownDirection {
   TimeLeft
   TimeSince
 }
 
+/// When a `Countdown` element shows the hours segment.
 pub type ShowHours {
   WhenNonZero
   Always
@@ -131,6 +137,7 @@ pub fn element_base(id: String) -> ElementBase {
   )
 }
 
+/// One drawable element of a `DrawRequest`.
 pub type Element {
   Text(
     base: ElementBase,
@@ -197,6 +204,7 @@ fn source_prop(source: AssetSource) -> #(String, Json) {
   }
 }
 
+/// Encode an `Element` as the JSON the device expects.
 pub fn element_to_json(element: Element) -> Json {
   case element {
     Text(base, text, font, color, width, rate, start_delay, repeat_delay) ->
@@ -291,6 +299,7 @@ pub type DrawRequest {
   )
 }
 
+/// Build the `POST /display/draw` request without sending it.
 pub fn draw_request(
   client: Client,
   draw: DrawRequest,
@@ -313,11 +322,13 @@ pub fn draw_request(
   Ok(api.with_json_body(req, body))
 }
 
+/// Draw elements on the display.
 pub fn draw(client: Client, draw: DrawRequest) -> Result(Nil, Error) {
   use req <- result.try(draw_request(client, draw))
   api.send_expect_success(req)
 }
 
+/// Build the `DELETE /display/draw` request without sending it.
 pub fn clear_request(
   client: Client,
   application_name: Option(String),
@@ -344,6 +355,7 @@ pub type Brightness {
   Level(Int)
 }
 
+/// Decoder for the `GET /display/brightness` response body.
 pub fn brightness_decoder() -> Decoder(Brightness) {
   use value <- decode.field("value", decode.string)
   case value {
@@ -363,17 +375,20 @@ fn brightness_to_string(brightness: Brightness) -> String {
   }
 }
 
+/// Build the `GET /display/brightness` request without sending it.
 pub fn get_brightness_request(
   client: Client,
 ) -> Result(Request(String), Error) {
   api.request_for(client, http.Get, "/display/brightness")
 }
 
+/// Get the current display brightness.
 pub fn get_brightness(client: Client) -> Result(Brightness, Error) {
   use req <- result.try(get_brightness_request(client))
   api.send_json(req, brightness_decoder())
 }
 
+/// Build the `POST /display/brightness` request without sending it.
 pub fn set_brightness_request(
   client: Client,
   brightness: Brightness,
@@ -386,6 +401,7 @@ pub fn set_brightness_request(
   Ok(api.set_query(req, [#("value", brightness_to_string(brightness))]))
 }
 
+/// Set the brightness of both displays.
 pub fn set_brightness(
   client: Client,
   brightness: Brightness,

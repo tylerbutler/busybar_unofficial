@@ -9,6 +9,7 @@ import gleam/json
 import gleam/option.{type Option, None}
 import gleam/result
 
+/// Progress of an in-flight firmware download.
 pub type DownloadProgress {
   DownloadProgress(
     speed_bytes_per_sec: Option(Int),
@@ -31,6 +32,7 @@ pub type InstallStatus {
   )
 }
 
+/// Result of the last update-availability check.
 pub type CheckStatus {
   CheckStatus(
     available_version: Option(String),
@@ -39,10 +41,13 @@ pub type CheckStatus {
   )
 }
 
+/// Combined firmware update status: install progress and check result.
 pub type UpdateStatus {
   UpdateStatus(install: Option(InstallStatus), check: Option(CheckStatus))
 }
 
+/// Automatic update configuration, with an optional daily time window
+/// (`interval_start`/`interval_end`).
 pub type AutoupdateSettings {
   AutoupdateSettings(
     is_enabled: Option(Bool),
@@ -110,6 +115,7 @@ fn check_decoder() -> Decoder(CheckStatus) {
   decode.success(CheckStatus(available_version:, event:, status:))
 }
 
+/// Decoder for the `GET /update/status` response body.
 pub fn update_status_decoder() -> Decoder(UpdateStatus) {
   use install <- decode.optional_field(
     "install",
@@ -124,11 +130,13 @@ pub fn update_status_decoder() -> Decoder(UpdateStatus) {
   decode.success(UpdateStatus(install:, check:))
 }
 
+/// Decoder for the `GET /update/changelog` response body.
 pub fn changelog_decoder() -> Decoder(String) {
   use changelog <- decode.field("changelog", decode.string)
   decode.success(changelog)
 }
 
+/// Decoder for the `GET /update/autoupdate` response body.
 pub fn autoupdate_decoder() -> Decoder(AutoupdateSettings) {
   use is_enabled <- decode.optional_field(
     "is_enabled",
@@ -140,6 +148,7 @@ pub fn autoupdate_decoder() -> Decoder(AutoupdateSettings) {
   decode.success(AutoupdateSettings(is_enabled:, interval_start:, interval_end:))
 }
 
+/// Build the `POST /update` request without sending it.
 pub fn upload_firmware_request(
   client: Client,
   data: BitArray,
@@ -158,6 +167,7 @@ pub fn upload_firmware(client: Client, data: BitArray) -> Result(Nil, Error) {
   api.send_bits_expect_success(req)
 }
 
+/// Build the `POST /update/check` request without sending it.
 pub fn check_for_update_request(
   client: Client,
 ) -> Result(Request(String), Error) {
@@ -170,17 +180,20 @@ pub fn check_for_update(client: Client) -> Result(Nil, Error) {
   api.send_expect_success(req)
 }
 
+/// Build the `GET /update/status` request without sending it.
 pub fn get_update_status_request(
   client: Client,
 ) -> Result(Request(String), Error) {
   api.request_for(client, http.Get, "/update/status")
 }
 
+/// Get the firmware update status.
 pub fn get_update_status(client: Client) -> Result(UpdateStatus, Error) {
   use req <- result.try(get_update_status_request(client))
   api.send_json(req, update_status_decoder())
 }
 
+/// Build the `GET /update/changelog` request without sending it.
 pub fn get_changelog_request(
   client: Client,
   version: String,
@@ -189,11 +202,13 @@ pub fn get_changelog_request(
   Ok(api.set_query(req, [#("version", version)]))
 }
 
+/// Get the changelog for a firmware version.
 pub fn get_changelog(client: Client, version: String) -> Result(String, Error) {
   use req <- result.try(get_changelog_request(client, version))
   api.send_json(req, changelog_decoder())
 }
 
+/// Build the `POST /update/install` request without sending it.
 pub fn install_request(
   client: Client,
   version: String,
@@ -208,28 +223,33 @@ pub fn install(client: Client, version: String) -> Result(Nil, Error) {
   api.send_expect_success(req)
 }
 
+/// Build the `POST /update/abort_download` request without sending it.
 pub fn abort_download_request(
   client: Client,
 ) -> Result(Request(String), Error) {
   api.request_for(client, http.Post, "/update/abort_download")
 }
 
+/// Abort an ongoing firmware download.
 pub fn abort_download(client: Client) -> Result(Nil, Error) {
   use req <- result.try(abort_download_request(client))
   api.send_expect_success(req)
 }
 
+/// Build the `GET /update/autoupdate` request without sending it.
 pub fn get_autoupdate_request(
   client: Client,
 ) -> Result(Request(String), Error) {
   api.request_for(client, http.Get, "/update/autoupdate")
 }
 
+/// Get the autoupdate settings.
 pub fn get_autoupdate(client: Client) -> Result(AutoupdateSettings, Error) {
   use req <- result.try(get_autoupdate_request(client))
   api.send_json(req, autoupdate_decoder())
 }
 
+/// Build the `POST /update/autoupdate` request without sending it.
 pub fn set_autoupdate_request(
   client: Client,
   settings: AutoupdateSettings,
@@ -246,6 +266,7 @@ pub fn set_autoupdate_request(
   Ok(api.with_json_body(req, body))
 }
 
+/// Set the autoupdate settings.
 pub fn set_autoupdate(
   client: Client,
   settings: AutoupdateSettings,

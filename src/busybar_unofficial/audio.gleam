@@ -15,6 +15,7 @@ pub type AudioSource {
   StockAudio(path: String)
 }
 
+/// Decoder for the `GET /audio/volume` response body.
 pub fn volume_decoder() -> Decoder(Float) {
   use volume <- decode.field(
     "volume",
@@ -23,6 +24,7 @@ pub fn volume_decoder() -> Decoder(Float) {
   decode.success(volume)
 }
 
+/// Build the `POST /audio/play` request without sending it.
 pub fn play_request(
   client: Client,
   application_name: String,
@@ -51,24 +53,29 @@ pub fn play(
   api.send_expect_success(req)
 }
 
+/// Build the `DELETE /audio/play` request without sending it.
 pub fn stop_request(client: Client) -> Result(Request(String), Error) {
   api.request_for(client, http.Delete, "/audio/play")
 }
 
+/// Stop any currently playing audio.
 pub fn stop(client: Client) -> Result(Nil, Error) {
   use req <- result.try(stop_request(client))
   api.send_expect_success(req)
 }
 
+/// Build the `GET /audio/volume` request without sending it.
 pub fn get_volume_request(client: Client) -> Result(Request(String), Error) {
   api.request_for(client, http.Get, "/audio/volume")
 }
 
+/// Get the current audio volume (0-100).
 pub fn get_volume(client: Client) -> Result(Float, Error) {
   use req <- result.try(get_volume_request(client))
   api.send_json(req, volume_decoder())
 }
 
+/// Build the `POST /audio/volume` request without sending it.
 pub fn set_volume_request(
   client: Client,
   volume: Int,

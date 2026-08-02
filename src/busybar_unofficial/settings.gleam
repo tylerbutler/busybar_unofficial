@@ -53,6 +53,8 @@ fn mode_to_string(mode: AccessMode) -> String {
   }
 }
 
+/// Current HTTP API access configuration. `key_valid` is reported only
+/// when the mode is `AccessKey`.
 pub type AccessInfo {
   AccessInfo(mode: AccessMode, key_valid: Option(Bool))
 }
@@ -63,6 +65,7 @@ pub type NetworkInterface {
   WifiInterface
 }
 
+/// Decoder for the `GET /access` response body.
 pub fn access_decoder() -> Decoder(AccessInfo) {
   use mode <- decode.field(
     "mode",
@@ -80,11 +83,13 @@ pub fn access_decoder() -> Decoder(AccessInfo) {
   decode.success(AccessInfo(mode:, key_valid:))
 }
 
+/// Decoder for the `GET /name` response body.
 pub fn name_decoder() -> Decoder(String) {
   use name <- decode.field("name", decode.string)
   decode.success(name)
 }
 
+/// Decoder for the `GET /transport` response body.
 pub fn transport_decoder() -> Decoder(NetworkInterface) {
   use type_ <- decode.field(
     "type",
@@ -96,6 +101,7 @@ pub fn transport_decoder() -> Decoder(NetworkInterface) {
   decode.success(type_)
 }
 
+/// Build the `POST /input` request without sending it.
 pub fn press_key_request(
   client: Client,
   key: InputKey,
@@ -110,15 +116,18 @@ pub fn press_key(client: Client, key: InputKey) -> Result(Nil, Error) {
   api.send_expect_success(req)
 }
 
+/// Build the `GET /access` request without sending it.
 pub fn get_access_request(client: Client) -> Result(Request(String), Error) {
   api.request_for(client, http.Get, "/access")
 }
 
+/// Get the HTTP API access-over-Wi-Fi configuration.
 pub fn get_access(client: Client) -> Result(AccessInfo, Error) {
   use req <- result.try(get_access_request(client))
   api.send_json(req, access_decoder())
 }
 
+/// Build the `POST /access` request without sending it.
 pub fn set_access_request(
   client: Client,
   mode: AccessMode,
@@ -142,15 +151,18 @@ pub fn set_access(
   api.send_expect_success(req)
 }
 
+/// Build the `GET /name` request without sending it.
 pub fn get_name_request(client: Client) -> Result(Request(String), Error) {
   api.request_for(client, http.Get, "/name")
 }
 
+/// Get the device name.
 pub fn get_name(client: Client) -> Result(String, Error) {
   use req <- result.try(get_name_request(client))
   api.send_json(req, name_decoder())
 }
 
+/// Build the `POST /name` request without sending it.
 pub fn set_name_request(
   client: Client,
   name: String,
@@ -159,15 +171,18 @@ pub fn set_name_request(
   Ok(api.with_json_body(req, json.object([#("name", json.string(name))])))
 }
 
+/// Set a new device name.
 pub fn set_name(client: Client, name: String) -> Result(Nil, Error) {
   use req <- result.try(set_name_request(client, name))
   api.send_expect_success(req)
 }
 
+/// Build the `GET /transport` request without sending it.
 pub fn get_transport_request(client: Client) -> Result(Request(String), Error) {
   api.request_for(client, http.Get, "/transport")
 }
 
+/// Get how the device is currently reachable (USB or Wi-Fi).
 pub fn get_transport(client: Client) -> Result(NetworkInterface, Error) {
   use req <- result.try(get_transport_request(client))
   api.send_json(req, transport_decoder())

@@ -7,11 +7,13 @@ import gleam/http
 import gleam/http/request.{type Request}
 import gleam/result
 
+/// A file (with its size in bytes) or directory in a storage listing.
 pub type StorageEntry {
   FileEntry(name: String, size: Int)
   DirEntry(name: String)
 }
 
+/// Storage usage, in bytes.
 pub type StorageStatus {
   StorageStatus(used_bytes: Int, free_bytes: Int, total_bytes: Int)
 }
@@ -29,11 +31,13 @@ fn entry_decoder() -> Decoder(StorageEntry) {
   }
 }
 
+/// Decoder for the `GET /storage/list` response body.
 pub fn list_decoder() -> Decoder(List(StorageEntry)) {
   use entries <- decode.field("list", decode.list(entry_decoder()))
   decode.success(entries)
 }
 
+/// Decoder for the `GET /storage/status` response body.
 pub fn status_decoder() -> Decoder(StorageStatus) {
   use used_bytes <- decode.field("used_bytes", decode.int)
   use free_bytes <- decode.field("free_bytes", decode.int)
@@ -41,6 +45,7 @@ pub fn status_decoder() -> Decoder(StorageStatus) {
   decode.success(StorageStatus(used_bytes:, free_bytes:, total_bytes:))
 }
 
+/// Build the `POST /storage/write` request without sending it.
 pub fn write_request(
   client: Client,
   path: String,
@@ -65,6 +70,7 @@ pub fn write(
   api.send_bits_expect_success(req)
 }
 
+/// Build the `GET /storage/read` request without sending it.
 pub fn read_request(
   client: Client,
   path: String,
@@ -79,6 +85,7 @@ pub fn read(client: Client, path: String) -> Result(BitArray, Error) {
   api.send_bits_raw(req)
 }
 
+/// Build the `GET /storage/list` request without sending it.
 pub fn list_request(
   client: Client,
   path: String,
@@ -87,11 +94,13 @@ pub fn list_request(
   Ok(api.set_query(req, [#("path", path)]))
 }
 
+/// List the contents of a directory on device storage.
 pub fn list(client: Client, path: String) -> Result(List(StorageEntry), Error) {
   use req <- result.try(list_request(client, path))
   api.send_json(req, list_decoder())
 }
 
+/// Build the `DELETE /storage/remove` request without sending it.
 pub fn remove_request(
   client: Client,
   path: String,
@@ -100,11 +109,13 @@ pub fn remove_request(
   Ok(api.set_query(req, [#("path", path)]))
 }
 
+/// Delete a file from device storage.
 pub fn remove(client: Client, path: String) -> Result(Nil, Error) {
   use req <- result.try(remove_request(client, path))
   api.send_expect_success(req)
 }
 
+/// Build the `POST /storage/mkdir` request without sending it.
 pub fn mkdir_request(
   client: Client,
   path: String,
@@ -113,11 +124,13 @@ pub fn mkdir_request(
   Ok(api.set_query(req, [#("path", path)]))
 }
 
+/// Create a directory on device storage.
 pub fn mkdir(client: Client, path: String) -> Result(Nil, Error) {
   use req <- result.try(mkdir_request(client, path))
   api.send_expect_success(req)
 }
 
+/// Build the `POST /storage/rename` request without sending it.
 pub fn rename_request(
   client: Client,
   path: String,
@@ -127,6 +140,7 @@ pub fn rename_request(
   Ok(api.set_query(req, [#("path", path), #("new_path", new_path)]))
 }
 
+/// Rename or move a file on device storage.
 pub fn rename(
   client: Client,
   path: String,
@@ -136,10 +150,12 @@ pub fn rename(
   api.send_expect_success(req)
 }
 
+/// Build the `GET /storage/status` request without sending it.
 pub fn get_status_request(client: Client) -> Result(Request(String), Error) {
   api.request_for(client, http.Get, "/storage/status")
 }
 
+/// Get storage usage.
 pub fn get_status(client: Client) -> Result(StorageStatus, Error) {
   use req <- result.try(get_status_request(client))
   api.send_json(req, status_decoder())

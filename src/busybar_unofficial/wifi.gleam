@@ -8,6 +8,7 @@ import gleam/http/request.{type Request}
 import gleam/option.{type Option, None}
 import gleam/result
 
+/// Wi-Fi connection state.
 pub type WifiState {
   StateUnknown
   StateDisconnected
@@ -17,6 +18,7 @@ pub type WifiState {
   StateReconnecting
 }
 
+/// IP configuration of the Wi-Fi interface.
 pub type IpConfig {
   IpConfig(
     ip_method: Option(String),
@@ -25,6 +27,8 @@ pub type IpConfig {
   )
 }
 
+/// Wi-Fi connection status. Fields beyond `state` are present only when
+/// the device reports them.
 pub type WifiStatus {
   WifiStatus(
     state: WifiState,
@@ -59,6 +63,7 @@ fn ip_config_decoder() -> Decoder(IpConfig) {
   decode.success(IpConfig(ip_method:, ip_type:, address:))
 }
 
+/// Decoder for the `GET /wifi/status` response body.
 pub fn status_decoder() -> Decoder(WifiStatus) {
   use state <- decode.field(
     "state",
@@ -108,10 +113,12 @@ pub fn status_decoder() -> Decoder(WifiStatus) {
   ))
 }
 
+/// Build the `GET /wifi/status` request without sending it.
 pub fn get_status_request(client: Client) -> Result(Request(String), Error) {
   api.request_for(client, http.Get, "/wifi/status")
 }
 
+/// Get the Wi-Fi connection status.
 pub fn get_status(client: Client) -> Result(WifiStatus, Error) {
   use req <- result.try(get_status_request(client))
   api.send_json(req, status_decoder())

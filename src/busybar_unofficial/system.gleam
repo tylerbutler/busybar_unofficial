@@ -9,6 +9,7 @@ import gleam/http/request.{type Request}
 import gleam/option.{type Option, None, Some}
 import gleam/result
 
+/// Firmware security state reported by the device.
 pub type FirmwareSecurity {
   Secure
   Insecure
@@ -16,6 +17,7 @@ pub type FirmwareSecurity {
   UnknownSecurity
 }
 
+/// Battery charging state.
 pub type PowerState {
   Discharging
   Charging
@@ -28,6 +30,7 @@ pub type ScreenId {
   BackScreen
 }
 
+/// Hardware identity: serial number, MAC addresses, and OTP info.
 pub type StatusDevice {
   StatusDevice(
     serial_number: String,
@@ -41,6 +44,7 @@ pub type StatusDevice {
   )
 }
 
+/// Installed firmware details.
 pub type StatusFirmware {
   StatusFirmware(
     version: String,
@@ -54,6 +58,7 @@ pub type StatusFirmware {
   )
 }
 
+/// System runtime information.
 pub type StatusSystem {
   StatusSystem(
     api_semver: String,
@@ -63,6 +68,7 @@ pub type StatusSystem {
   )
 }
 
+/// Battery and power measurements.
 pub type StatusPower {
   StatusPower(
     state: PowerState,
@@ -73,6 +79,7 @@ pub type StatusPower {
   )
 }
 
+/// Combined device status. Sections the device omitted are `None`.
 pub type Status {
   Status(
     device: Option(StatusDevice),
@@ -82,6 +89,7 @@ pub type Status {
   )
 }
 
+/// Decoder for the `GET /status/device` response body.
 pub fn device_decoder() -> Decoder(StatusDevice) {
   use serial_number <- decode.field("serial_number", decode.string)
   use usb_mac <- decode.field("usb_mac", decode.string)
@@ -127,6 +135,7 @@ pub fn device_decoder() -> Decoder(StatusDevice) {
   ))
 }
 
+/// Decoder for the `GET /status/firmware` response body.
 pub fn firmware_decoder() -> Decoder(StatusFirmware) {
   use version <- decode.field("version", decode.string)
   use target <- decode.field("target", decode.int)
@@ -156,6 +165,7 @@ pub fn firmware_decoder() -> Decoder(StatusFirmware) {
   ))
 }
 
+/// Decoder for the `GET /status/system` response body.
 pub fn system_decoder() -> Decoder(StatusSystem) {
   use api_semver <- decode.field("api_semver", decode.string)
   use uptime <- decode.field("uptime", decode.string)
@@ -169,6 +179,7 @@ pub fn system_decoder() -> Decoder(StatusSystem) {
   ))
 }
 
+/// Decoder for the `GET /status/power` response body.
 pub fn power_decoder() -> Decoder(StatusPower) {
   use state <- decode.field(
     "state",
@@ -191,6 +202,7 @@ pub fn power_decoder() -> Decoder(StatusPower) {
   ))
 }
 
+/// Decoder for the `GET /status` response body.
 pub fn status_decoder() -> Decoder(Status) {
   use device <- decode.optional_field(
     "device",
@@ -215,64 +227,76 @@ pub fn status_decoder() -> Decoder(Status) {
   decode.success(Status(device:, firmware:, system:, power:))
 }
 
+/// Decoder for the `GET /version` response body.
 pub fn version_decoder() -> Decoder(String) {
   use api_semver <- decode.field("api_semver", decode.string)
   decode.success(api_semver)
 }
 
+/// Build the `GET /status` request without sending it.
 pub fn get_status_request(client: Client) -> Result(Request(String), Error) {
   api.request_for(client, http.Get, "/status")
 }
 
+/// Get the combined device status.
 pub fn get_status(client: Client) -> Result(Status, Error) {
   use req <- result.try(get_status_request(client))
   api.send_json(req, status_decoder())
 }
 
+/// Build the `GET /status/device` request without sending it.
 pub fn get_device_status_request(
   client: Client,
 ) -> Result(Request(String), Error) {
   api.request_for(client, http.Get, "/status/device")
 }
 
+/// Get device hardware info.
 pub fn get_device_status(client: Client) -> Result(StatusDevice, Error) {
   use req <- result.try(get_device_status_request(client))
   api.send_json(req, device_decoder())
 }
 
+/// Build the `GET /status/firmware` request without sending it.
 pub fn get_firmware_status_request(
   client: Client,
 ) -> Result(Request(String), Error) {
   api.request_for(client, http.Get, "/status/firmware")
 }
 
+/// Get installed firmware info.
 pub fn get_firmware_status(client: Client) -> Result(StatusFirmware, Error) {
   use req <- result.try(get_firmware_status_request(client))
   api.send_json(req, firmware_decoder())
 }
 
+/// Build the `GET /status/system` request without sending it.
 pub fn get_system_status_request(
   client: Client,
 ) -> Result(Request(String), Error) {
   api.request_for(client, http.Get, "/status/system")
 }
 
+/// Get system runtime status.
 pub fn get_system_status(client: Client) -> Result(StatusSystem, Error) {
   use req <- result.try(get_system_status_request(client))
   api.send_json(req, system_decoder())
 }
 
+/// Build the `GET /status/power` request without sending it.
 pub fn get_power_status_request(
   client: Client,
 ) -> Result(Request(String), Error) {
   api.request_for(client, http.Get, "/status/power")
 }
 
+/// Get power and battery status.
 pub fn get_power_status(client: Client) -> Result(StatusPower, Error) {
   use req <- result.try(get_power_status_request(client))
   api.send_json(req, power_decoder())
 }
 
+/// Build the `GET /version` request without sending it.
 pub fn get_version_request(client: Client) -> Result(Request(String), Error) {
   api.request_for(client, http.Get, "/version")
 }
@@ -283,6 +307,7 @@ pub fn get_version(client: Client) -> Result(String, Error) {
   api.send_json(req, version_decoder())
 }
 
+/// Build the `GET /screen` request without sending it.
 pub fn get_screen_request(
   client: Client,
   screen: ScreenId,
@@ -303,6 +328,7 @@ pub fn get_screen(client: Client, screen: ScreenId) -> Result(BitArray, Error) {
   |> result.replace_error(UnexpectedResponse(200, body))
 }
 
+/// Build the `POST /log_dump` request without sending it.
 pub fn dump_log_request(
   client: Client,
   filename: Option(String),

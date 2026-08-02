@@ -6,6 +6,7 @@ import gleam/http
 import gleam/http/request.{type Request}
 import gleam/result
 
+/// Build the `POST /assets/upload` request without sending it.
 pub fn upload_request(
   client: Client,
   application_name: String,
@@ -40,6 +41,7 @@ pub fn upload(
   api.send_bits_expect_success(req)
 }
 
+/// Build the `DELETE /assets/upload` request without sending it.
 pub fn delete_request(
   client: Client,
   application_name: String,

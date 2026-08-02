@@ -9,6 +9,7 @@ import gleam/json.{type Json}
 import gleam/list
 import gleam/result
 
+/// Presentation settings shared by snapshots and profiles.
 pub type BusyBarSettings {
   BusyBarSettings(
     theme: String,
@@ -17,6 +18,7 @@ pub type BusyBarSettings {
   )
 }
 
+/// Configuration for an interval (work/rest) timer.
 pub type IntervalSettings {
   IntervalSettings(
     interval_work_ms: Int,
@@ -26,6 +28,7 @@ pub type IntervalSettings {
   )
 }
 
+/// The timer configuration stored in a profile.
 pub type TimerSettings {
   InfiniteTimer
   SimpleTimer(total_time_ms: Int)
@@ -47,6 +50,8 @@ pub type Snapshot {
   )
 }
 
+/// A full busy-timer snapshot: the timer state, its settings, and the
+/// timestamp (Unix ms) at which the snapshot was taken.
 pub type BusySnapshot {
   BusySnapshot(
     snapshot: Snapshot,
@@ -55,6 +60,7 @@ pub type BusySnapshot {
   )
 }
 
+/// A stored timer profile.
 pub type BusyProfile {
   BusyProfile(
     id: String,
@@ -79,6 +85,7 @@ fn slot_to_string(slot: ProfileSlot) -> String {
   }
 }
 
+/// Decoder for `BusyBarSettings` JSON.
 pub fn settings_decoder() -> Decoder(BusyBarSettings) {
   use theme <- decode.field("theme", decode.string)
   use show_work_phase_only <- decode.field("show_work_phase_only", decode.bool)
@@ -90,6 +97,7 @@ pub fn settings_decoder() -> Decoder(BusyBarSettings) {
   ))
 }
 
+/// Decoder for `IntervalSettings` JSON.
 pub fn interval_settings_decoder() -> Decoder(IntervalSettings) {
   use interval_work_ms <- decode.field("interval_work_ms", decode.int)
   use interval_rest_ms <- decode.field("interval_rest_ms", decode.int)
@@ -106,6 +114,7 @@ pub fn interval_settings_decoder() -> Decoder(IntervalSettings) {
   ))
 }
 
+/// Decoder for `TimerSettings` JSON.
 pub fn timer_settings_decoder() -> Decoder(TimerSettings) {
   use kind <- decode.field("type", decode.string)
   case kind {
@@ -173,6 +182,7 @@ fn snapshot_object_decoder() -> Decoder(#(Snapshot, BusyBarSettings)) {
   }
 }
 
+/// Decoder for the `GET /busy/snapshot` response body.
 pub fn snapshot_decoder() -> Decoder(BusySnapshot) {
   use inner <- decode.field("snapshot", snapshot_object_decoder())
   use snapshot_timestamp_ms <- decode.field("snapshot_timestamp_ms", decode.int)
@@ -184,6 +194,7 @@ pub fn snapshot_decoder() -> Decoder(BusySnapshot) {
   ))
 }
 
+/// Decoder for the `GET /busy/profiles/{slot}` response body.
 pub fn profile_decoder() -> Decoder(BusyProfile) {
   use id <- decode.field("id", decode.string)
   use title <- decode.field("title", decode.string)
@@ -201,6 +212,7 @@ pub fn profile_decoder() -> Decoder(BusyProfile) {
   ))
 }
 
+/// Encode `BusyBarSettings` as the JSON the device expects.
 pub fn settings_to_json(settings: BusyBarSettings) -> Json {
   json.object([
     #("theme", json.string(settings.theme)),
@@ -223,6 +235,7 @@ fn interval_settings_props(
   ]
 }
 
+/// Encode `TimerSettings` as the JSON the device expects.
 pub fn timer_settings_to_json(settings: TimerSettings) -> Json {
   case settings {
     InfiniteTimer -> json.object([#("type", json.string("INFINITE"))])
@@ -284,6 +297,7 @@ fn snapshot_props(snapshot: Snapshot) -> List(#(String, Json)) {
   }
 }
 
+/// Encode a `BusySnapshot` as the JSON the device expects.
 pub fn snapshot_to_json(snapshot: BusySnapshot) -> Json {
   json.object([
     #(
@@ -298,6 +312,7 @@ pub fn snapshot_to_json(snapshot: BusySnapshot) -> Json {
   ])
 }
 
+/// Encode a `BusyProfile` as the JSON the device expects.
 pub fn profile_to_json(profile: BusyProfile) -> Json {
   json.object([
     #("id", json.string(profile.id)),
@@ -309,15 +324,18 @@ pub fn profile_to_json(profile: BusyProfile) -> Json {
   ])
 }
 
+/// Build the `GET /busy/snapshot` request without sending it.
 pub fn get_snapshot_request(client: Client) -> Result(Request(String), Error) {
   api.request_for(client, http.Get, "/busy/snapshot")
 }
 
+/// Get the current busy-timer state as a snapshot.
 pub fn get_snapshot(client: Client) -> Result(BusySnapshot, Error) {
   use req <- result.try(get_snapshot_request(client))
   api.send_json(req, snapshot_decoder())
 }
 
+/// Build the `PUT /busy/snapshot` request without sending it.
 pub fn set_snapshot_request(
   client: Client,
   snapshot: BusySnapshot,
@@ -326,6 +344,7 @@ pub fn set_snapshot_request(
   Ok(api.with_json_body(req, snapshot_to_json(snapshot)))
 }
 
+/// Run the busy timer starting from the given snapshot.
 pub fn set_snapshot(
   client: Client,
   snapshot: BusySnapshot,
@@ -334,6 +353,7 @@ pub fn set_snapshot(
   api.send_expect_success(req)
 }
 
+/// Build the `GET /busy/profiles/{slot}` request without sending it.
 pub fn get_profile_request(
   client: Client,
   slot: ProfileSlot,
@@ -341,6 +361,7 @@ pub fn get_profile_request(
   api.request_for(client, http.Get, "/busy/profiles/" <> slot_to_string(slot))
 }
 
+/// Get the timer profile stored in a slot.
 pub fn get_profile(
   client: Client,
   slot: ProfileSlot,
@@ -349,6 +370,7 @@ pub fn get_profile(
   api.send_json(req, profile_decoder())
 }
 
+/// Build the `PUT /busy/profiles/{slot}` request without sending it.
 pub fn set_profile_request(
   client: Client,
   slot: ProfileSlot,
@@ -362,6 +384,7 @@ pub fn set_profile_request(
   Ok(api.with_json_body(req, profile_to_json(profile)))
 }
 
+/// Store a timer profile in a slot.
 pub fn set_profile(
   client: Client,
   slot: ProfileSlot,
