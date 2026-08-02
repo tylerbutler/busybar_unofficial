@@ -3,6 +3,7 @@ import busybar_unofficial/display.{
   Auto, Bold, DrawRequest, Level, StockAsset, Text,
 }
 import gleam/http
+import gleam/http/request
 import gleam/json
 import gleam/option.{None, Some}
 import gleeunit/should
@@ -153,6 +154,40 @@ pub fn clear_request_scoped_test() {
   let assert Ok(req) = display.clear_request(client(), Some("my_app"))
   req.method |> should.equal(http.Delete)
   req.query |> should.equal(Some("application_name=my_app"))
+}
+
+pub fn upload_and_draw_requests_test() {
+  let draw =
+    DrawRequest(
+      application_name: "gleam_logo",
+      priority: Some(90),
+      led_notification_color: None,
+      elements: [
+        display.Image(
+          base: display.element_base("lucy"),
+          source: display.AppAsset("gleam.png"),
+          opacity: None,
+        ),
+      ],
+    )
+  let assert Ok(#(upload, drawing)) =
+    display.upload_and_draw_requests(client(), "gleam.png", <<137, 80>>, draw)
+
+  upload.method |> should.equal(http.Post)
+  upload.path |> should.equal("/busybar/assets/upload")
+  upload.query
+  |> should.equal(Some("application_name=gleam_logo&file=gleam.png"))
+  upload.body |> should.equal(<<137, 80>>)
+  request.get_header(upload, "content-type")
+  |> should.equal(Ok("application/octet-stream"))
+
+  drawing.method |> should.equal(http.Post)
+  drawing.path |> should.equal("/busybar/display/draw")
+  drawing.body
+  |> should.equal(
+    "{\"application_name\":\"gleam_logo\",\"priority\":90,\"elements\":"
+    <> "[{\"id\":\"lucy\",\"type\":\"image\",\"path\":\"gleam.png\"}]}",
+  )
 }
 
 pub fn brightness_decoder_auto_test() {

@@ -20,6 +20,40 @@ pub fn main() {
 }
 ```
 
+### Showing an image
+
+The draw API takes no inline image data — an image has to be uploaded as an
+app asset first, then referenced by name. `display.upload_and_draw` does both:
+
+```gleam
+import busybar_unofficial/display
+import gleam/option.{None, Some}
+
+let assert Ok(logo) = simplifile.read_bits("priv/gleam_logo_72x16.png")
+
+display.upload_and_draw(
+  client,
+  "gleam.png",
+  logo,
+  display.DrawRequest(
+    application_name: "gleam_logo",
+    priority: Some(90),
+    led_notification_color: None,
+    elements: [
+      display.Image(
+        base: display.element_base("lucy"),
+        source: display.AppAsset("gleam.png"),
+        opacity: None,
+      ),
+    ],
+  ),
+)
+```
+
+The device does not resize: scale the image to the target display first. The
+front matrix is 72x16 RGB, the back screen 160x80 in 16 shades of grey. `priv/`
+holds a Gleam logo at both sizes, plus the script that generates them.
+
 ## Modules
 
 | Module | Covers |
@@ -46,4 +80,9 @@ Not covered: the WebSocket streaming endpoint (`/busybar/status/ws`).
 ```sh
 just deps && just test   # unit tests, no device needed
 BUSYBAR_URL=http://<device-ip> just test-integration
+
+# the integration suite is read-only unless you opt in to drawing:
+BUSYBAR_URL=http://<device-ip> BUSYBAR_DRAW=1 gleam test
+
+python3 priv/generate_logo.py   # regenerate the logo assets
 ```

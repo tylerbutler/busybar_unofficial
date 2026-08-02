@@ -1,6 +1,7 @@
 //// Drawing elements on the displays and controlling brightness.
 
 import busybar_unofficial.{type Client, type Error}
+import busybar_unofficial/assets
 import busybar_unofficial/internal/api
 import gleam/dynamic/decode.{type Decoder}
 import gleam/http
@@ -347,6 +348,54 @@ pub fn clear(
 ) -> Result(Nil, Error) {
   use req <- result.try(clear_request(client, application_name))
   api.send_expect_success(req)
+}
+
+/// Build the upload and draw requests for showing an image, without sending
+/// either. The asset is uploaded under `draw.application_name`, so the name
+/// the device files it under cannot drift from the name the elements
+/// reference.
+///
+/// `file_name` must be a flat name like `"gleam.png"` — the upload endpoint
+/// rejects `/` in it, even though `AppAsset` paths may contain one.
+pub fn upload_and_draw_requests(
+  client: Client,
+  file_name: String,
+  data: BitArray,
+  draw: DrawRequest,
+) -> Result(#(Request(BitArray), Request(String)), Error) {
+  use upload <- result.try(assets.upload_request(
+    client,
+    draw.application_name,
+    file_name,
+    data,
+  ))
+  use drawing <- result.try(draw_request(client, draw))
+  Ok(#(upload, drawing))
+}
+
+/// Upload an image asset, then draw the elements that reference it.
+///
+/// The draw API takes no inline image data, so showing custom artwork is
+/// always these two calls. The image must already be scaled to the target
+/// display: the front matrix is 72x16, the back screen 160x80.
+///
+/// A `draw.priority` of `None` defaults to 50 on the device, which draws over
+/// the built-in apps but not over an active BUSY session — use `Some(90)` or
+/// higher to preempt one.
+pub fn upload_and_draw(
+  client: Client,
+  file_name: String,
+  data: BitArray,
+  draw: DrawRequest,
+) -> Result(Nil, Error) {
+  use #(upload, drawing) <- result.try(upload_and_draw_requests(
+    client,
+    file_name,
+    data,
+    draw,
+  ))
+  use _ <- result.try(api.send_bits_expect_success(upload))
+  api.send_expect_success(drawing)
 }
 
 /// Display brightness: automatic or a fixed 0-100 level.
