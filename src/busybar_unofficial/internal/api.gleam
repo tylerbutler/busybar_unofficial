@@ -156,3 +156,10 @@ pub fn send_bits_raw(req: Request(BitArray)) -> Result(BitArray, Error) {
   |> result.map_error(network_error)
   |> result.try(handle_bits)
 }
+
+/// Attach a JSON body and content-type header to a request.
+pub fn with_json_body(req: Request(String), body: Json) -> Request(String) {
+  req
+  |> request.set_body(json.to_string(body))
+  |> request.set_header("content-type", "application/json")
+}

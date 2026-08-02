@@ -134,3 +134,12 @@ pub fn compact_drops_none_props_test() {
   ])
   |> should.equal([#("a", json.int(1)), #("c", json.string("x"))])
 }
+
+pub fn with_json_body_sets_body_and_content_type_test() {
+  let client2 = busybar_unofficial.new("http://192.168.4.1")
+  let assert Ok(req) = api.request_for(client2, http.Post, "/name")
+  let req = api.with_json_body(req, json.object([#("name", json.string("x"))]))
+  req.body |> should.equal("{\"name\":\"x\"}")
+  request.get_header(req, "content-type")
+  |> should.equal(Ok("application/json"))
+}
