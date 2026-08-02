@@ -29,10 +29,10 @@ pub fn read_request_test() {
 
 pub fn list_decoder_test() {
   let body =
-    "{\"list\":[{\"type\":\"file\",\"name\":\"a.txt\"},"
+    "{\"list\":[{\"type\":\"file\",\"name\":\"a.txt\",\"size\":65535},"
     <> "{\"type\":\"dir\",\"name\":\"sub\"}]}"
   json.parse(body, storage.list_decoder())
-  |> should.equal(Ok([FileEntry("a.txt"), DirEntry("sub")]))
+  |> should.equal(Ok([FileEntry("a.txt", 65_535), DirEntry("sub")]))
 }
 
 pub fn rename_request_test() {

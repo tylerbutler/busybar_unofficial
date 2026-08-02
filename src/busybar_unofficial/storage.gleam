@@ -8,7 +8,7 @@ import gleam/http/request.{type Request}
 import gleam/result
 
 pub type StorageEntry {
-  FileEntry(name: String)
+  FileEntry(name: String, size: Int)
   DirEntry(name: String)
 }
 
@@ -20,9 +20,12 @@ fn entry_decoder() -> Decoder(StorageEntry) {
   use kind <- decode.field("type", decode.string)
   use name <- decode.field("name", decode.string)
   case kind {
-    "file" -> decode.success(FileEntry(name))
+    "file" -> {
+      use size <- decode.field("size", decode.int)
+      decode.success(FileEntry(name:, size:))
+    }
     "dir" -> decode.success(DirEntry(name))
-    _ -> decode.failure(FileEntry(name), "storage entry")
+    _ -> decode.failure(FileEntry(name, 0), "storage entry")
   }
 }
 
